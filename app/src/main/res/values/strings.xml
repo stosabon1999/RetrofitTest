@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">RetrofitTest</string>
+    <string name="default_temperature">Default temperature</string>
+</resources>
