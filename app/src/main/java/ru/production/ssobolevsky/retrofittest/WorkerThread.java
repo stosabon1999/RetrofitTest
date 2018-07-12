@@ -27,7 +27,6 @@ public class WorkerThread extends HandlerThread {
         return mMyHandler;
     }
 
-    private Context mContext;
 
     @Override
     protected void onLooperPrepared() {
@@ -35,9 +34,8 @@ public class WorkerThread extends HandlerThread {
     }
 
 
-    public WorkerThread(String name, Context context) {
+    public WorkerThread(String name) {
         super(name);
-        mContext = context;
     }
 
 
@@ -56,7 +54,7 @@ public class WorkerThread extends HandlerThread {
                 case GET_WEATHER :
                     Message message = new Message();
                     message.what = GET_WEATHER_RESULT;
-                    message.obj = WeatherDatabase.getInstance(mContext)
+                    message.obj = WeatherDatabase.getInstance()
                             .getWeatherDAO()
                             .getListWeather();
                     try {
@@ -68,7 +66,7 @@ public class WorkerThread extends HandlerThread {
                 case GET_WEATHER_DAY :
                     Message message1 = new Message();
                     message1.what = GET_WEATHER_DAY_RESULT;
-                    message1.obj = WeatherDatabase.getInstance(mContext)
+                    message1.obj = WeatherDatabase.getInstance()
                             .getWeatherDAO()
                             .gerWeatherByDate((String) msg.obj);
                     try {

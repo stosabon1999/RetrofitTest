@@ -15,14 +15,17 @@ public abstract class WeatherDatabase extends RoomDatabase {
 
     private static WeatherDatabase INSTANCE;
 
-    public static WeatherDatabase getInstance(Context context) {
-        if (INSTANCE == null) {
-            INSTANCE = Room.databaseBuilder(context, WeatherDatabase.class, "my_weather.db")
-                    .build();
-        }
+    public static WeatherDatabase getInstance() {
         return INSTANCE;
     }
 
+    public static void initInstance(Context context) {
+        INSTANCE = Room.databaseBuilder(context, WeatherDatabase.class, "my_weather.db")
+                .build();
+    }
+
     public abstract WeatherDAO getWeatherDAO();
+
+
 
 }

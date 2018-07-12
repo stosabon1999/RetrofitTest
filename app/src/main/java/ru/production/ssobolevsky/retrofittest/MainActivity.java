@@ -13,12 +13,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ru.production.ssobolevsky.retrofittest.adapter.CustomAdapter;
 import ru.production.ssobolevsky.retrofittest.database.WeatherEntity;
+import ru.production.ssobolevsky.retrofittest.mvvm.Converter;
+import ru.production.ssobolevsky.retrofittest.mvvm.ObservableWeather;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LinearLayoutManager mManager;
     private CustomAdapter mAdapter;
-    private List<WeatherEntity> mData;
     private WorkerThread mWorkerThread;
     private MyBroadcastReceiver mMyBroadcasteceiver = new MyBroadcastReceiver();
 
@@ -34,8 +35,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == WorkerThread.GET_WEATHER_RESULT) {
-                mData = (List<WeatherEntity>) msg.obj;
-                mAdapter.setData(mData);
+                List<WeatherEntity> weatherEntityList = (List<WeatherEntity>) msg.obj;
+                List<ObservableWeather> data = new ArrayList<>();
+                for (WeatherEntity weatherEntity : weatherEntityList) {
+                    data.add(Converter.convertEntityToObservable(weatherEntity));
+                }
+                mAdapter.setData(data);
             }
         }
     };
@@ -78,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mManager);
         mAdapter = new CustomAdapter(MainActivity.this);
         mRecyclerView.setAdapter(mAdapter);
-        mWorkerThread = new WorkerThread(WorkerThread.NAME, getApplicationContext());
+        mWorkerThread = new WorkerThread(WorkerThread.NAME);
         mWorkerThread.start();
     }
 

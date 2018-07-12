@@ -15,8 +15,9 @@ import org.w3c.dom.Text;
 import java.util.List;
 
 import ru.production.ssobolevsky.retrofittest.database.WeatherEntity;
+import ru.production.ssobolevsky.retrofittest.retrofit.Weather;
 
-public class WeatherActivity extends AppCompatActivity {
+public class WeatherActivity extends AppCompatActivity implements WeatherView {
 
     public static final String DATA = "DATA";
 
@@ -25,29 +26,13 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView mTextViewHumidity;
     private TextView mTextViewPressure;
 
-    private WeatherEntity mWeatherEntity;
-    private WorkerThread mWorkerThread;
-
-    private Handler mUiHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message msg) {
-            if (msg.what == WorkerThread.GET_WEATHER_DAY_RESULT) {
-                mWeatherEntity = (WeatherEntity) msg.obj;
-                mTextViewDate.setText(mWeatherEntity.getDate());
-                mTextViewTemperature.setText(mWeatherEntity.getTemperature());
-                mTextViewHumidity.setText(mWeatherEntity.getHumidity());
-                mTextViewPressure.setText(mWeatherEntity.getPressure());
-            }
-        }
-    };
+    private MyPresenter mMyPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather);
         init();
-        mWorkerThread = new WorkerThread(WorkerThread.NAME, getApplicationContext());
-        mWorkerThread.start();
     }
 
     private void init() {
@@ -55,22 +40,22 @@ public class WeatherActivity extends AppCompatActivity {
         mTextViewTemperature = findViewById(R.id.tv_temperature_day);
         mTextViewHumidity = findViewById(R.id.tv_humidity_day);
         mTextViewPressure = findViewById(R.id.tv_pressure_day);
+
+        mMyPresenter = new MyPresenter();
+        mMyPresenter.attachView(WeatherActivity.this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Message message = new Message();
-        message.what = WorkerThread.GET_WEATHER_DAY;
-        message.obj = getIntent().getStringExtra(DATA);
-        message.replyTo = new Messenger(mUiHandler);
-        mWorkerThread.getMyHandler().sendMessage(message);
+        mMyPresenter.sendMessageToReceiveFullWeatherData(getIntent().getStringExtra(DATA));
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        mWorkerThread.quit();
+    protected void onDestroy() {
+        super.onDestroy();
+        mMyPresenter.detachView();
+        mMyPresenter = null;
     }
 
     public static final Intent newIntent(Context context, String date) {
@@ -79,4 +64,11 @@ public class WeatherActivity extends AppCompatActivity {
         return intent;
     }
 
+    @Override
+    public void showWeather(WeatherEntity weather) {
+        mTextViewDate.setText(weather.getDate());
+        mTextViewTemperature.setText(weather.getTemperature());
+        mTextViewHumidity.setText(weather.getHumidity());
+        mTextViewPressure.setText(weather.getPressure());
+    }
 }

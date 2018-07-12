@@ -19,6 +19,9 @@ public interface WeatherDAO {
     @Query("SELECT * FROM weather WHERE date = :date")
     WeatherEntity gerWeatherByDate(String date);
 
+    @Query("DELETE FROM weather")
+    void clearTable();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertWeather(WeatherEntity entity);
 

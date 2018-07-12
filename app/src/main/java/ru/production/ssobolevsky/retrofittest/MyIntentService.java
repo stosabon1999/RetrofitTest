@@ -31,10 +31,11 @@ public class MyIntentService extends IntentService {
         ApiMapper mapper = new ApiMapper(new RetrofitHelper());
         try {
             List<Weather> data = mapper.weatherSync(LATITUDE, LONGITUDE);
+            WeatherDatabase.getInstance().getWeatherDAO().clearTable();
             for (Weather weather : data) {
                 Timestamp timestamp = new Timestamp(weather.getTime() * MILLISECONDS);
                 Date date = new Date(timestamp.getTime());
-                WeatherDatabase.getInstance(getApplicationContext()).getWeatherDAO().insertWeather(new WeatherEntity(date.toString(),
+                WeatherDatabase.getInstance().getWeatherDAO().insertWeather(new WeatherEntity(date.toString(),
                         weather.getTemperature().toString(),
                         weather.getHumidity().toString(),
                         weather.getPressure().toString()));

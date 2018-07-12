@@ -1,18 +1,18 @@
 package ru.production.ssobolevsky.retrofittest.adapter;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.production.ssobolevsky.retrofittest.mvvm.ObservableWeather;
 import ru.production.ssobolevsky.retrofittest.R;
-import ru.production.ssobolevsky.retrofittest.database.WeatherEntity;
-import ru.production.ssobolevsky.retrofittest.retrofit.Weather;
+import ru.production.ssobolevsky.retrofittest.databinding.ItemWeatherBinding;
 import ru.production.ssobolevsky.retrofittest.WeatherActivity;
 
 /**
@@ -21,7 +21,7 @@ import ru.production.ssobolevsky.retrofittest.WeatherActivity;
 
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder>{
 
-    private List<WeatherEntity> mData;
+    private List<ObservableWeather> mData;
     private Context mContext;
 
     public CustomAdapter(Context context) {
@@ -31,19 +31,18 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_weather, parent, false);
-        return new MyViewHolder(v);
+        ItemWeatherBinding itemWeatherBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.item_weather, parent, false);
+        return new MyViewHolder(itemWeatherBinding);
     }
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        holder.mTime.setText(String.valueOf(mData.get(position).getDate()));
-        holder.mTempersature.setText(String.valueOf(mData.get(position).getTemperature()));
-        holder.mTime.setOnClickListener(new View.OnClickListener() {
+        ObservableWeather weather = mData.get(position);
+        holder.mBinding.setWeather(weather);
+        holder.mBinding.getRoot().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mContext.startActivity(WeatherActivity.newIntent(mContext, holder.mTime.getText().toString()));
+                mContext.startActivity(WeatherActivity.newIntent(mContext, holder.mBinding.tvTime.getText().toString()));
             }
         });
     }
@@ -55,17 +54,15 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView mTime;
-        private TextView mTempersature;
+        ItemWeatherBinding mBinding;
 
-        public MyViewHolder(View itemView) {
-            super(itemView);
-            mTime = itemView.findViewById(R.id.tv_time);
-            mTempersature = itemView.findViewById(R.id.tv_temperature);
+        public MyViewHolder(ItemWeatherBinding binding) {
+            super(binding.getRoot());
+            mBinding = binding;
         }
     }
 
-    public void setData(List<WeatherEntity> list) {
+    public void setData(List<ObservableWeather> list) {
         mData = list;
         notifyDataSetChanged();
     }
