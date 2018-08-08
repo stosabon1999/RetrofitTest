@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LinearLayoutManager mManager;
     private CustomAdapter mAdapter;
+    private TextView mTextView;
     @Inject
     MainPresenter mMainPresenter;
 
@@ -44,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
 
     private void init() {
         MyApplication.getApplicationComponent().inject(this);
+        mTextView = findViewById(R.id.tv_empty_data);
         mMainPresenter.attachView(this);
         mRecyclerView = findViewById(R.id.rv_weather);
         mSwipeRefreshLayout =  findViewById(R.id.activity_main_swipe_refresh_layout);
@@ -54,12 +59,7 @@ public class MainActivity extends AppCompatActivity implements MainView {
     }
 
     private void initListeners() {
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mMainPresenter.getNewData();
-            }
-        });
+        mSwipeRefreshLayout.setOnRefreshListener(() -> mMainPresenter.getNewData());
     }
 
     @Override
@@ -71,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements MainView {
 
     @Override
     public void showData(List<ObservableWeather> data) {
+        mTextView.setVisibility(View.GONE);
+        mRecyclerView.setVisibility(View.VISIBLE);
         mAdapter.setData(data);
     }
 
@@ -87,5 +89,32 @@ public class MainActivity extends AppCompatActivity implements MainView {
     @Override
     public void hideProgress() {
         mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void render(MainState mainState) {
+        if (mainState.isLoading()) {
+            showProgress();
+        } else if (mainState.getError() != null) {
+            hideProgress();
+            try {
+                throw mainState.getError();
+            } catch (Throwable throwable) {
+                Log.d("LOG", "Непредвиденная ошибка");
+            }
+        } else if (mainState.getObservableWeathers() != null) {
+            if (mainState.getObservableWeathers().isEmpty()) {
+                showText();
+                hideProgress();
+            } else {
+                showData(mainState.getObservableWeathers());
+                hideProgress();
+            }
+        }
+    }
+    @Override
+    public void showText() {
+        mTextView.setVisibility(View.VISIBLE);
+        mRecyclerView.setVisibility(View.GONE);
     }
 }

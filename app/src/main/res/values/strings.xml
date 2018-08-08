@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">RetrofitTest</string>
     <string name="default_temperature">Default temperature</string>
+    <string name="empty_data">Данные пустые</string>
 </resources>

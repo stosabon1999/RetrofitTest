@@ -31,17 +31,18 @@ public class MainPresenter {
         mMainView = null;
     }
 
-    private void getWeeklyWeather() {
-
-    }
-
     public void getNewData() {
-        mMainView.showProgress();
+        mMainView.render(new MainState(true, null, null));
         mSevenDayForecastUseCase.getSevenDayForecast()
                 .subscribeOn(Schedulers.io())
                 .map(weather -> Converter.convertWeatherResponseToObservable(weather))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(weather -> mMainView.showData(weather));
-        mMainView.hideProgress();
+                .subscribe(weather -> {
+                    if (mMainView != null) {
+                        mMainView.render(new MainState(false, weather, null));
+                    } else  {
+                        mMainView.render(new MainState(false, null, new NullPointerException()));
+                    }
+                });
     }
 }

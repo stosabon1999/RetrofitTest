@@ -16,5 +16,7 @@ public interface MainView {
     void onRefresh();
     void showProgress();
     void hideProgress();
+    void render(MainState mainState);
+    void showText();
 
 }
